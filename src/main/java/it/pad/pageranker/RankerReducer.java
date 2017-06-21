@@ -13,9 +13,11 @@ import it.pad.PageRankConstants;
 public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable, PageRankWritable>{
 	
 	private double euclideanNorm;
-	private float dampingFactor;
-	private float correction;
+	private long nodes;
+	private double dampingFactor;
+	private double correction;
 	private double newPageRank;
+	private String source;
 
 /**
 	*	retrive damping factor and number of nodes in the graph
@@ -23,10 +25,8 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	@Override
 	protected final void setup(Context context) throws IOException, InterruptedException{
 		dampingFactor=context.getConfiguration().getFloat(PageRankConstants.DF_KEY, 0.85f);
-		correction=context.getConfiguration().getLong(PageRankConstants.N_KEY, 0);
-		if(correction>0){
-			correction=(1-dampingFactor)/correction;
-		}
+		nodes=context.getConfiguration().getLong(PageRankConstants.N_KEY, 0);
+		correction=(double)(1-dampingFactor)/nodes;
 		euclideanNorm=0;
 	}
 	
@@ -35,13 +35,16 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	*/	
 	@Override
 	public final void reduce(Text inputKey, Iterable<PageRankWritable> inputValues, Context context) throws IOException, InterruptedException{
+		source=inputKey.toString();
 		newPageRank=0;
 		PageRankWritable outValue=null;
 		for(PageRankWritable prw : inputValues){
-			if(!prw.hasEmptyAdjacencyList()){
+			//this is the original adjacency list, needed to rebuild the graph
+			if(source.compareTo(prw.getSource().toString())==0){
 				outValue=new PageRankWritable(prw);
 				continue;
 			}
+			//this is a term coming from an ingoing edge
 			newPageRank+=prw.getPageRank();
 		}
 		newPageRank*=dampingFactor;

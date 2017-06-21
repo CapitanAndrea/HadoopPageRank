@@ -9,11 +9,12 @@ import it.pad.parser.ParserMapper;
 
 public class AdjacencyListMapper extends ParserMapper{
 
+	private Text source=new Text();
+
 	@Override
 	public void parse(String line, Context context) throws IOException, InterruptedException{
-		if(line.startsWith("#")) return; //comment line
 		String[] nodes=line.split("\\s");
-		Text source=new Text(nodes[0]);
+		source.set(nodes[0]);
 		Text destination=new Text();
 		if(nodes.length==1){
 			context.write(source, destination);

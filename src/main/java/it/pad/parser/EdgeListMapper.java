@@ -8,8 +8,9 @@ import it.pad.parser.ParserMapper;
 
 public class EdgeListMapper extends ParserMapper{
 
-	Text source=new Text();
-	Text destination=new Text();
+	private Text source=new Text();
+	private Text destination=new Text();
+	private final Text emptyText=new Text();
 
 	@Override
 	public void parse(String line, Context context) throws IOException, InterruptedException{
@@ -17,6 +18,8 @@ public class EdgeListMapper extends ParserMapper{
 		source.set(nodes[0]);
 		destination.set(nodes[1]);
 		context.write(source, destination);
+		//write an edge with source the destination of the edge and destination an empty text so that the adjacency list will be built correctly
+		context.write(destination, emptyText);
 	}
 	
 }

@@ -98,8 +98,10 @@ public class PageRankWritable implements Writable {
 		sb.append(sourceNode.toString());
 		sb.append(separator);
 		sb.append(pageRank.get());
-		sb.append(separator);
-		sb.append(adjacencyList.toString());
+		if(!hasEmptyAdjacencyList()){
+			sb.append(separator);
+			sb.append(adjacencyList.toString());
+		}
 		return sb.toString();
 	}
 }
