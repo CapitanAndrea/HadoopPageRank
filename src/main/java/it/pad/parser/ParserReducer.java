@@ -35,7 +35,7 @@ public class ParserReducer extends Reducer<Text, Text, NullWritable, PageRankWri
 		}
 		//emit a PRW for each node containing the source node, its adjacency list and the starting value of page rank
 		output.setSource(source.toString());
-		output.setAdjacencyList(builder.toString());
+		output.setAdjacencyList(builder.toString().trim());
 		context.write(NullWritable.get(), output);
 	}
 }

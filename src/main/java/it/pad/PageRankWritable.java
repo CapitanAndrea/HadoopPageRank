@@ -25,7 +25,11 @@ public class PageRankWritable implements Writable {
 		String[] parts=source.toString().split("\\s", 3);
 		this.setSource(parts[0]);
 		this.setPageRank(Double.parseDouble(parts[1]));
-		if(copyAdjacencyList) this.setAdjacencyList(parts[2]);
+		if(copyAdjacencyList){
+			try{
+				this.setAdjacencyList(parts[2]);
+			} catch(ArrayIndexOutOfBoundsException e){} //if there is no adjacency list to store just go on
+		}
 	}
 	
 	public PageRankWritable(Text source){

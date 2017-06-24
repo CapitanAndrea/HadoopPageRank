@@ -134,7 +134,7 @@ public class PageRankDriver extends Configured implements Tool{
 		
 
 		/*	page rank computation	*/
-		configuration=new Configuration(); //è veramente necessaria un nuovo oggetto?
+		configuration=new Configuration(); //è veramente necessario un nuovo oggetto?
 		configuration.setFloat(PageRankConstants.DF_KEY, dampingFactor);
 		configuration.setLong(PageRankConstants.N_KEY, nodes);
 
@@ -163,7 +163,7 @@ public class PageRankDriver extends Configured implements Tool{
 			rankingJob.waitForCompletion(true);
 			double norm=Math.sqrt(Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.RANK_NORM).getValue()));
 			System.out.println("\t\tITERATION " + iterations + " COMPLETED. THE 2-NORM OF THE STEP IS: " + norm);
-			System.out.println("\t\t The sum of all pr values in mapper is: " + Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE2).getValue()));
+			//System.out.println("\t\t The sum of all pr values in mapper is: " + Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE2).getValue()));
 			System.out.println("\t\t The sum of all pr values in reducer is: " + Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()));
 
 			if(norm<=errorThreshold) break;

@@ -18,6 +18,7 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	private double correction;
 	private double newPageRank;
 	private String source;
+	private double sum;
 
 /**
 	*	retrive damping factor and number of nodes in the graph
@@ -28,6 +29,7 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 		nodes=context.getConfiguration().getLong(PageRankConstants.N_KEY, 0);
 		correction=(double)(1-dampingFactor)/nodes;
 		euclideanNorm=0;
+		sum=0;
 	}
 	
 /**
@@ -50,6 +52,24 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 		newPageRank*=dampingFactor;
 		newPageRank+=correction;
 		euclideanNorm+=Math.pow((newPageRank-outValue.getPageRank()), 2);
+		sum+=newPageRank;
+		/*try{
+			
+		}catch(NullPointerException e){
+			for(PageRankWritable prw : inputValues){
+					prw.setPageRank(-1);
+					context.write(NullWritable.get(), prw);
+			}
+			e.printStackTrace();
+			/*
+			PageRankWritable errval=new PageRankWritable();
+			errval.setSource(inputKey.toString());
+			errval.setPageRank(-1);
+			errval.setAdjacencyList("");
+			context.write(NullWritable.get(), errval);
+			
+			return;
+		}*/
 		outValue.setPageRank(newPageRank);
 		context.write(NullWritable.get(), outValue);
 	}
@@ -60,5 +80,6 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	@Override
 	protected final void cleanup(Context context){
 		context.getCounter(PageRankCounters.RANK_NORM).increment(Double.doubleToLongBits(euclideanNorm));
+		context.getCounter(PageRankCounters.LOG_VALUE1).increment(Double.doubleToLongBits(euclideanNorm));
 	}
 }

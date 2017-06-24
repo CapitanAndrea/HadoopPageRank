@@ -8,6 +8,9 @@ import java.io.IOException;
 
 public abstract class ParserMapper extends Mapper<LongWritable, Text, Text, Text>{
 	
+	/**
+		*	this should emit one key-value for each edge and at least one key-emptyvalue for each node
+		*/
 	@Override
 	public final void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException{
 		String line=value.toString();
