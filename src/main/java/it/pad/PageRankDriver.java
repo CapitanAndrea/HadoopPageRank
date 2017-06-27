@@ -41,7 +41,7 @@ public class PageRankDriver extends Configured implements Tool{
 		String outputFile=null;
 	/*	optional arguments with default values	*/
 		float dampingFactor=0.85f;
-		double errorThreshold=0;
+//		double errorThreshold=0;
 		int maxIterations=10;
 		int numReducers=1;
 	/*	computation variables	*/
@@ -89,11 +89,13 @@ public class PageRankDriver extends Configured implements Tool{
 				continue;
 			}
 			//	error threshold to reach before stopping
+			/*
 			if(args[i].compareTo("-e")==0){
 				i++;
 				errorThreshold=Double.parseDouble(args[i]);
 				continue;
 			}
+			*/
 			//	damping factor to be used
 			if(args[i].compareTo("-d")==0){
 				i++;
@@ -130,7 +132,7 @@ public class PageRankDriver extends Configured implements Tool{
 
 		parsingJob.setNumReduceTasks(numReducers);
 		parsingJob.waitForCompletion(true);
-		System.out.println("\t\t The sum of all pr values in reducer is: " + Double.longBitsToDouble(parsingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()));
+		//System.out.println("\t\t The sum of all pr values in reducer is: " + Double.longBitsToDouble(parsingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()));
 		
 
 		/*	page rank computation	*/
@@ -161,13 +163,13 @@ public class PageRankDriver extends Configured implements Tool{
 			rankingJob.setNumReduceTasks(numReducers);
 
 			rankingJob.waitForCompletion(true);
-			double norm=Math.sqrt(Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.RANK_NORM).getValue()));
-			System.out.println("\t\tITERATION " + iterations + " COMPLETED. THE 2-NORM OF THE STEP IS: " + norm);
+			double norm=Math.sqrt((double)rankingJob.getCounters().findCounter(PageRankCounters.RANK_NORM).getValue()/nodes);
+			System.out.println("\t\tITERATION " + iterations + " COMPLETED.");// THE 2-NORM OF THE STEP IS: " + norm);
 			//System.out.println("\t\t The sum of all pr values in mapper is: " + Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE2).getValue()));
-			System.out.println("\t\t The sum of all pr values in reducer is: " + Double.longBitsToDouble(rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()));
+			//System.out.println("\t\t The sum of all pr values in reducer is: " + (double)rankingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()/nodes);
 
-			if(norm<=errorThreshold) break;
-			fs.delete(input, true);
+			//if(norm<=errorThreshold) break;
+			//fs.delete(input, true);
 
 		}
 
@@ -197,6 +199,36 @@ public class PageRankDriver extends Configured implements Tool{
 	}
 
 	public static void main(String[] args) throws Exception{
+	/*
+		PageRankWritable prw=new PageRankWritable();
+		
+		System.out.println(prw.hasEmptySource());
+		System.out.println(prw.getSource());
+		System.out.println(prw.getPageRank());
+		System.out.println(prw.hasEmptyAdjacencyList());
+		System.out.println(prw.getAdjacencyList());
+		System.out.println(prw);
+		System.out.println("--------------------------------------");
+		prw.setSource("miao");
+		prw.setPageRank(100);
+		prw.setAdjacencyList("PURR PURR PURR");
+		System.out.println(prw.hasEmptySource());
+		System.out.println(prw.getSource());
+		System.out.println(prw.getPageRank());
+		System.out.println(prw.hasEmptyAdjacencyList());
+		System.out.println(prw.getAdjacencyList());
+		System.out.println(prw);
+		System.out.println("--------------------------------------");
+		prw.clearSource();
+		prw.clearAdjacencyList();
+		System.out.println(prw.hasEmptySource());
+		System.out.println(prw.getSource());
+		System.out.println(prw.getPageRank());
+		System.out.println(prw.hasEmptyAdjacencyList());
+		System.out.println(prw.getAdjacencyList());
+		System.out.println(prw);
+		System.out.println("--------------------------------------");
+		*/
 		int result=new PageRankDriver().run(args);
 	}
 }

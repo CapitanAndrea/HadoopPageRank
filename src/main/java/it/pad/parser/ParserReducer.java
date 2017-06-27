@@ -16,12 +16,16 @@ public class ParserReducer extends Reducer<Text, Text, NullWritable, PageRankWri
 	private static final String separator="\t";
 	private PageRankWritable output=new PageRankWritable();
 	private String destinationString;
+	
+	private double prsum;
 
 	@Override
 	protected final void setup(Context context){
 		// get the total number of nodes to set the starting value of pagerank for all the nodes
 		nodes=context.getConfiguration().getLong(PageRankConstants.N_KEY, 0);
 		output.setPageRank((double)1/nodes);
+		
+		prsum=0;
 	}
 
 	@Override
@@ -37,5 +41,12 @@ public class ParserReducer extends Reducer<Text, Text, NullWritable, PageRankWri
 		output.setSource(source.toString());
 		output.setAdjacencyList(builder.toString().trim());
 		context.write(NullWritable.get(), output);
+		
+		prsum+=output.getPageRank();
+	}
+	
+	@Override
+	protected final void cleanup(Context context){
+		context.getCounter(PageRankCounters.LOG_VALUE1).increment(Double.doubleToLongBits(prsum));
 	}
 }

@@ -22,15 +22,17 @@ public class RankerMapper extends Mapper <LongWritable, Text, Text, PageRankWrit
 		//emit the line itself to rebuild the original graph
 		outKey.set(outValue.getSource());
 		context.write(outKey, outValue);
+		
 		//then emit a key-value for each destination node with the destination node id and the pagerank of the analyzed node
-		String[] adjacencyArray=outValue.getAdjacencyList().split("\\t");
-		double outgoingPageRank=outValue.getPageRank()/adjacencyArray.length;
-		outValue.setPageRank(outgoingPageRank);
-		outValue.clearAdjacencyList();
-		if(adjacencyArray.length==0){
-			outKey.set(outValue.getSource());
+		outValue.clearSource();
+		if(outValue.hasEmptyAdjacencyList()){
+		//if a node has no outgoing edges, it votes for itself
 			context.write(outKey, outValue);
 		} else{
+			String[] adjacencyArray=outValue.getAdjacencyList().split("\\t");
+			double outgoingPageRank=outValue.getPageRank()/adjacencyArray.length;
+			outValue.setPageRank(outgoingPageRank);
+			outValue.clearAdjacencyList();
 			for(String destinationId : adjacencyArray){
 				outKey.set(destinationId);
 				context.write(outKey, outValue);

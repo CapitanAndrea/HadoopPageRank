@@ -40,36 +40,36 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 		source=inputKey.toString();
 		newPageRank=0;
 		PageRankWritable outValue=null;
+		
+		//TODO: delet.
+		/*
+		if(source.compareTo("")==0){
+			for(PageRankWritable prw : inputValues){
+				prw.setPageRank(-1);
+				context.write(NullWritable.get(), prw);
+			}
+			outValue=new PageRankWritable();
+			outValue.setPageRank(-2);
+			outValue.setSource(inputKey.toString());
+			context.write(NullWritable.get(), outValue);
+			return;
+		}
+		*/
+		
 		for(PageRankWritable prw : inputValues){
 			//this is the original adjacency list, needed to rebuild the graph
-			if(source.compareTo(prw.getSource().toString())==0){
+			if(!prw.hasEmptySource()){
 				outValue=new PageRankWritable(prw);
 				continue;
 			}
 			//this is a term coming from an ingoing edge
 			newPageRank+=prw.getPageRank();
 		}
+		
 		newPageRank*=dampingFactor;
 		newPageRank+=correction;
 		euclideanNorm+=Math.pow((newPageRank-outValue.getPageRank()), 2);
 		sum+=newPageRank;
-		/*try{
-			
-		}catch(NullPointerException e){
-			for(PageRankWritable prw : inputValues){
-					prw.setPageRank(-1);
-					context.write(NullWritable.get(), prw);
-			}
-			e.printStackTrace();
-			/*
-			PageRankWritable errval=new PageRankWritable();
-			errval.setSource(inputKey.toString());
-			errval.setPageRank(-1);
-			errval.setAdjacencyList("");
-			context.write(NullWritable.get(), errval);
-			
-			return;
-		}*/
 		outValue.setPageRank(newPageRank);
 		context.write(NullWritable.get(), outValue);
 	}
@@ -79,7 +79,7 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	*/
 	@Override
 	protected final void cleanup(Context context){
-		context.getCounter(PageRankCounters.RANK_NORM).increment(Double.doubleToLongBits(euclideanNorm));
-		context.getCounter(PageRankCounters.LOG_VALUE1).increment(Double.doubleToLongBits(euclideanNorm));
+		context.getCounter(PageRankCounters.RANK_NORM).increment((long)euclideanNorm*nodes);
+		context.getCounter(PageRankCounters.LOG_VALUE1).increment((long)sum*nodes);
 	}
 }

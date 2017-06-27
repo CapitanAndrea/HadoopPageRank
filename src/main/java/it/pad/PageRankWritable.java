@@ -67,6 +67,14 @@ public class PageRankWritable implements Writable {
 		sourceNode.set(newSource);
 	}
 	
+	public void clearSource(){
+		sourceNode.clear();
+	}
+	
+	public boolean hasEmptySource(){
+		return sourceNode.getLength()==0;
+	}
+	
 	public void setPageRank(double newPageRank){
 		pageRank.set(newPageRank);
 	}
