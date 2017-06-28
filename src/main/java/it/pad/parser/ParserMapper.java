@@ -7,6 +7,10 @@ import org.apache.hadoop.mapreduce.Mapper;
 import java.io.IOException;
 
 public abstract class ParserMapper extends Mapper<LongWritable, Text, Text, Text>{
+
+        protected Text source=new Text();
+        protected Text destination=new Text();
+        protected final Text emptyText=new Text();
 	
 	/**
 		*	this should emit one key-value for each edge and at least one key-emptyvalue for each node

@@ -8,10 +8,6 @@ import it.pad.parser.ParserMapper;
 
 public class EdgeListMapper extends ParserMapper{
 
-	private Text source=new Text();
-	private Text destination=new Text();
-	private final Text emptyText=new Text();
-
 	@Override
 	public void parse(String line, Context context) throws IOException, InterruptedException{
 		String[] nodes=line.split("\\s");

@@ -3,12 +3,13 @@ package it.pad;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.IOException;
 
-public class PageRankWritable implements Writable {
+public class PageRankWritable implements WritableComparable<PageRankWritable> {
 
 	private Text sourceNode;
 	private DoubleWritable pageRank;
@@ -115,5 +116,10 @@ public class PageRankWritable implements Writable {
 			sb.append(adjacencyList.toString());
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(PageRankWritable prw){
+		return 0;
 	}
 }

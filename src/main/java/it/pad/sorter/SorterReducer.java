@@ -11,17 +11,16 @@ import it.pad.PageRankWritable;
 import it.pad.PageRankCounters;
 import it.pad.PageRankConstants;
 
-public abstract class SorterReducer extends Reducer<NullWritable, PageRankWritable, NullWritable, PageRankWritable> implements Comparator<PageRankWritable>{
+public class SorterReducer extends Reducer<PageRankWritable, PageRankWritable, NullWritable, PageRankWritable>{
 
-	private TreeSet<PageRankWritable> topPages;
+	//TODO: capire se c'è un modo per far arrivare i valori al reducer già ordinati (secondary sorting o qualcosa del genere)
 	private long maxElements;
 
 	/**
 		*	load arguments and initialize variables
-		*/	
+		*/
 	@Override
 	protected final void setup(Context context) throws IOException, InterruptedException{
-		topPages=new TreeSet<PageRankWritable>(this);
 		maxElements=context.getConfiguration().getLong(PageRankConstants.RES_KEY, 10);
 	}
 
@@ -29,26 +28,11 @@ public abstract class SorterReducer extends Reducer<NullWritable, PageRankWritab
 		*	add a result to the private data structure
 		*/
 	@Override
-	public final void reduce(NullWritable oldKey, Iterable<PageRankWritable> oldValues, Context context) throws IOException, InterruptedException{
-		for(PageRankWritable oldValue : oldValues){
-			topPages.add(new PageRankWritable(oldValue));
-			if(topPages.size()>maxElements) topPages.pollFirst();
+	public final void reduce(PageRankWritable key, Iterable<PageRankWritable> values, Context context) throws IOException, InterruptedException{
+		long e=0;
+		for(PageRankWritable prw : values){
+			if(e++<maxElements) context.write(NullWritable.get(), prw);
 		}
 	}
-	
-	/**
-		*	write results to context
-		*/
-	@Override
-	protected final void cleanup(Context context) throws IOException, InterruptedException{
-		for(PageRankWritable prw : topPages){
-			context.write(NullWritable.get(), prw);
-		}
-	}
-	
-	/**
-		*	template method handle to insert elements in the private structure
-		*/
-	public abstract int compare(PageRankWritable prw1, PageRankWritable prw2);
 	
 }
