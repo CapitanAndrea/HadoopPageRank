@@ -15,12 +15,18 @@ public class PageRankWritable implements WritableComparable<PageRankWritable> {
 	private DoubleWritable pageRank;
 	private Text adjacencyList;
 	
+	/**
+	 * Creates a new instance with default values
+	 */
 	public PageRankWritable(){
 		sourceNode=new Text();
 		pageRank=new DoubleWritable();
 		adjacencyList=new Text();
 	}
 	
+	/**
+	 * Creates a new instance by parsing the source argument, selectively initializing the adjacency list
+	 */
 	public PageRankWritable(Text source, boolean copyAdjacencyList){
 		this();
 		String[] parts=source.toString().split("\\s", 3);
@@ -33,10 +39,16 @@ public class PageRankWritable implements WritableComparable<PageRankWritable> {
 		}
 	}
 	
+	/**
+	 * Creates a new instance by parsing the source argument
+	 */
 	public PageRankWritable(Text source){
 		this(source, true);
 	}
 	
+	/**
+	 * Creates a new instance by copying the values in the source object
+	 */
 	public PageRankWritable(PageRankWritable source){
 		this();
 		this.setSource(source.getSource());
@@ -64,6 +76,7 @@ public class PageRankWritable implements WritableComparable<PageRankWritable> {
 		return prw;
 	}
 	
+	/* setters and getters */
 	public void setSource(String newSource){
 		sourceNode.set(newSource);
 	}

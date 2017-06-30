@@ -13,8 +13,8 @@ public class EdgeListMapper extends ParserMapper{
 		String[] nodes=line.split("\\s");
 		source.set(nodes[0]);
 		destination.set(nodes[1]);
-		context.write(source, destination);
-		//write an edge with source the destination of the edge and destination an empty text so that the adjacency list will be built correctly
+		context.write(source, destination); //write the pair for the edge
+		//write a pair with key the destination of the edge and value an empty text so that the adjacency list will be built correctly
 		context.write(destination, emptyText);
 	}
 	

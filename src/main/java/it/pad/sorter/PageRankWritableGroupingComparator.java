@@ -11,6 +11,7 @@ public class PageRankWritableGroupingComparator extends WritableComparator{
 		super(PageRankWritable.class, true);
 	}
 
+//	All the compare methods return 0 so that all key-value pairs are given to the same reduce call
 	@Override
 	public final int compare(WritableComparable wc1, WritableComparable wc2){
 		return 0;

@@ -11,36 +11,32 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 
+import it.pad.parser.ParserMapper;
 import it.pad.parser.ParserReducer;
-import it.pad.pageranker.RankerMapper;
-import it.pad.pageranker.RankerReducer;
+import it.pad.ranker.RankerMapper;
+import it.pad.ranker.RankerReducer;
 import it.pad.sorter.SorterMapper;
 import it.pad.sorter.SorterReducer;
 import it.pad.sorter.PageRankWritableGroupingComparator;
+import it.pad.sorter.PageRankWritableKeyComparator;
 import it.pad.PageRankConstants;
 
-//TODO: la somma non fa 1, edit: ora sì, ma forse va bene anche se non fa 1
-//TODO: aggiungere test
-//TODO: ricontrollare codice
-//TODO: pulire codice
-
 /**
-	* usage: -p parserClassName -s sorterClassName -n numberOfNodes -i inputFile -o outputFile [-m maxIterations] [-d dampingFactor] [-r numReducers] [-e numberOfRecordsToEmit]
-	* use split -d -n r/3 data/pr-xxsmall.txt google-splits/ to split by number of output files
-	* or split -d -C 64M data/web-Google.txt google-splits/ to split by size
+	* usage: -p parserClassName -s sorterClassName -n numberOfNodes -i inputFile -o outputFile [-m maxIterations] [-d dampingFactor] [-r numReducers] [-t numberOfRecordsToEmit]
+	* use split -d -n r/3 source destination to split by number of output files
+	* or split -d -C 64M source destination to split by size
 */
 public class PageRankDriver extends Configured implements Tool{
 
 	public int run(String[] args) throws Exception{
 	/*	necessary arguments	*/
 		long nodes=-1;
-		Class<? extends org.apache.hadoop.mapreduce.Mapper> parserClass=null;
-		Class<? extends it.pad.sorter.PageRankWritableKeyComparator> sorterClass=null;
+		Class<? extends ParserMapper> parserClass=null;
+		Class<? extends PageRankWritableKeyComparator> sorterClass=null;
 		String inputFile=null;
 		String outputFile=null;
 	/*	optional arguments with default values	*/
 		float dampingFactor=0.85f;
-//		double errorThreshold=0;
 		long maxIterations=10;
 		long emit=-1;
 		int numReducers=1;
@@ -53,13 +49,13 @@ public class PageRankDriver extends Configured implements Tool{
 			//	parser class
 			if(args[i].compareTo("-p")==0){
 				i++;
-				parserClass=(Class<? extends org.apache.hadoop.mapreduce.Mapper>)Class.forName(args[i]);
+				parserClass=(Class<? extends ParserMapper>)Class.forName(args[i]);
 				continue;
 			}
 			//	sorter class
 			if(args[i].compareTo("-s")==0){
 				i++;
-				sorterClass=(Class<? extends it.pad.sorter.PageRankWritableKeyComparator>)Class.forName(args[i]);
+				sorterClass=(Class<? extends PageRankWritableKeyComparator>)Class.forName(args[i]);
 				continue;
 			}
 			//	number of nodes in the input graph
@@ -106,13 +102,27 @@ public class PageRankDriver extends Configured implements Tool{
 				continue;
 			}
 		}
-		if(nodes<1 || parserClass==null || sorterClass==null || inputFile==null || outputFile==null){
-			System.out.println("-p parserClassName -s sorterClassName -n numberOfNodes -i inputFile -o outputFile [-m maxIterations] [-d dampingFactor] [-r numReducers] [-t numberOfRecordsToEmit]");
+		
+		/*check if the arguments passed are valid*/
+		if(nodes<1){
+			System.out.println("|=ERROR=| The number of nodes was not specified or less than 1");
 			return -1;
+		}
+		if(parserClass==null || sorterClass==null || inputFile==null || outputFile==null){
+			System.out.println("|=ERROR=| Requested arguments: -p parserClassName -s sorterClassName -n numberOfNodes -i inputFile -o outputFile"); 
+			System.out.println("|=ERROR=| Optional arguments: [-m maxIterations] [-d dampingFactor] [-r numReducers] [-t numberOfRecordsToEmit]");
+			return -1;
+		}
+		if(!ParserMapper.class.isAssignableFrom(parserClass)){
+			System.out.println("|=WARNING=| It is STRONGLY recommended that your parser class extends it.pad.parser.ParserMapper");
+		}
+		if(!PageRankWritableKeyComparator.class.isAssignableFrom(sorterClass)){
+			System.out.println("|=WARNING=| It is STRONGLY recommended that your sorter class extends it.pad.sorter.PageRankWritableKeyComparator");
 		}
 		if(emit==-1) emit=nodes;
 
 		/*	parsing job	*/
+		System.out.println("|=LOG=|\t\tSTARTING PARSING JOB.");
 		Configuration configuration=new Configuration();
 		configuration.setLong(PageRankConstants.N_KEY, nodes);
 		
@@ -133,17 +143,18 @@ public class PageRankDriver extends Configured implements Tool{
 
 		parsingJob.setNumReduceTasks(numReducers);
 		parsingJob.waitForCompletion(true);
-		//System.out.println("\t\t The sum of all pr values in reducer is: " + Double.longBitsToDouble(parsingJob.getCounters().findCounter(PageRankCounters.LOG_VALUE1).getValue()));
+		System.out.println("|=LOG=|\t\tPARSING JOB COMPLETED.");
 		
 
 		/*	page rank computation	*/
-		configuration=new Configuration(); //è veramente necessario un nuovo oggetto?
+		configuration=new Configuration();
 		configuration.setFloat(PageRankConstants.DF_KEY, dampingFactor);
 		configuration.setLong(PageRankConstants.N_KEY, nodes);
 
 		FileSystem fs=FileSystem.get(configuration);
 
 		for(iterations=1; iterations<=maxIterations; iterations++){
+			System.out.println("|=LOG=|\t\tSTARTING ITERATION " + iterations + ".");
 
 			Job rankingJob=new Job(configuration, "ranking_job");
 			rankingJob.setJarByClass(PageRankDriver.class);
@@ -164,13 +175,14 @@ public class PageRankDriver extends Configured implements Tool{
 			rankingJob.setNumReduceTasks(numReducers);
 
 			rankingJob.waitForCompletion(true);
-			double norm=Math.sqrt((double)rankingJob.getCounters().findCounter(PageRankCounters.RANK_NORM).getValue()/nodes);
-			System.out.println("\t\tITERATION " + iterations + " COMPLETED.");
+			System.out.println("|=LOG=|\t\tITERATION " + iterations + " COMPLETED.");
 			
+			//delete the files no more needed
 			fs.delete(input, true);
 		}
 
 		/*	final sort	*/
+		System.out.println("|=LOG=|\t\tSTARTING SORING JOB.");
 		Job sortingJob=new Job(new Configuration(), "sorting_job");
 		sortingJob.setJarByClass(PageRankDriver.class);
 
@@ -183,9 +195,12 @@ public class PageRankDriver extends Configured implements Tool{
 		sortingJob.setOutputKeyClass(NullWritable.class);
 		sortingJob.setOutputValueClass(PageRankWritable.class);
 
+		//this grouping comparator is used to send all the pairs to one reducer
 		sortingJob.setGroupingComparatorClass(PageRankWritableGroupingComparator.class);
+		//this sort comparator is used to perform secondary sorting
 		sortingJob.setSortComparatorClass(sorterClass);
 
+		//set the total number of records to emit
 		sortingJob.getConfiguration().setLong(PageRankConstants.RES_KEY, emit);
 		sortingJob.setNumReduceTasks(1);
 
@@ -196,40 +211,12 @@ public class PageRankDriver extends Configured implements Tool{
 		sortingJob.waitForCompletion(true);
 
 		fs.delete(input, true);
+		System.out.println("|=LOG=|\t\tSORTING JOB COMPLETED.");
 		return 0;
 	}
 
 	public static void main(String[] args) throws Exception{
-	/*
-		PageRankWritable prw=new PageRankWritable();
-		
-		System.out.println(prw.hasEmptySource());
-		System.out.println(prw.getSource());
-		System.out.println(prw.getPageRank());
-		System.out.println(prw.hasEmptyAdjacencyList());
-		System.out.println(prw.getAdjacencyList());
-		System.out.println(prw);
-		System.out.println("--------------------------------------");
-		prw.setSource("miao");
-		prw.setPageRank(100);
-		prw.setAdjacencyList("PURR PURR PURR");
-		System.out.println(prw.hasEmptySource());
-		System.out.println(prw.getSource());
-		System.out.println(prw.getPageRank());
-		System.out.println(prw.hasEmptyAdjacencyList());
-		System.out.println(prw.getAdjacencyList());
-		System.out.println(prw);
-		System.out.println("--------------------------------------");
-		prw.clearSource();
-		prw.clearAdjacencyList();
-		System.out.println(prw.hasEmptySource());
-		System.out.println(prw.getSource());
-		System.out.println(prw.getPageRank());
-		System.out.println(prw.hasEmptyAdjacencyList());
-		System.out.println(prw.getAdjacencyList());
-		System.out.println(prw);
-		System.out.println("--------------------------------------");
-		*/
 		int result=new PageRankDriver().run(args);
+		System.exit(result);
 	}
 }

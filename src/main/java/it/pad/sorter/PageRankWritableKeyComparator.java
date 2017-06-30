@@ -26,6 +26,9 @@ public abstract class PageRankWritableKeyComparator extends WritableComparator{
 		return super.compare(b1, s1, l1, b2, s2, l2);
 	}
 	
+	/**
+	 * Compare the two arguments to define a sorting strategy
+	 */
 	protected abstract int compare(PageRankWritable prw1, PageRankWritable prw2);
 	
 }

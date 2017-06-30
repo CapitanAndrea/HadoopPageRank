@@ -1,4 +1,4 @@
-package it.pad.pageranker;
+package it.pad.ranker;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
@@ -7,7 +7,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 
 import it.pad.PageRankWritable;
-import it.pad.PageRankCounters;
 import it.pad.PageRankConstants;
 
 public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable, PageRankWritable>{
@@ -16,19 +15,14 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 	private double constantTerm;
 	private double newPageRank;
 
-/**
-	*	retrive damping factor and number of nodes in the graph
-	*/
 	@Override
 	protected final void setup(Context context) throws IOException, InterruptedException{
+		//Compute the constant term of the formula using the arguments passed from the driver
 		dampingFactor=context.getConfiguration().getFloat(PageRankConstants.DF_KEY, 0.85f);
 		long nodes=context.getConfiguration().getLong(PageRankConstants.N_KEY, 0);
 		constantTerm=(double)(1-dampingFactor)/nodes;
 	}
 	
-/**
-	*	for all vales of a key, sum all the pagerank values, multiply by damping factor and correct the final value before writing
-	*/	
 	@Override
 	public final void reduce(Text inputKey, Iterable<PageRankWritable> inputValues, Context context) throws IOException, InterruptedException{
 		String source=inputKey.toString();
@@ -44,12 +38,11 @@ public class RankerReducer extends Reducer<Text, PageRankWritable, NullWritable,
 			//this is a term coming from an ingoing edge
 			newPageRank+=prw.getPageRank();
 		}
-		
+		//compute the new approximation
 		newPageRank*=dampingFactor;
 		newPageRank+=constantTerm;
-//		euclideanNorm+=Math.pow((newPageRank-outValue.getPageRank()), 2);
-//		sum+=newPageRank;
 		outValue.setPageRank(newPageRank);
+		//write the new approximation with the graph on the context
 		context.write(NullWritable.get(), outValue);
 	}
 }

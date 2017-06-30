@@ -3,7 +3,10 @@ package it.pad.sorter;
 import it.pad.PageRankWritable;
 import it.pad.sorter.PageRankWritableKeyComparator;
 
-public class AscendingIdComparator extends PageRankWritableKeyComparator{
+/**
+ * Defines the sorting of nodes based on the node id in ascending order
+ */
+public class AscendingStringIdComparator extends PageRankWritableKeyComparator{
 	
 	@Override
 	protected int compare(PageRankWritable prw1, PageRankWritable prw2){

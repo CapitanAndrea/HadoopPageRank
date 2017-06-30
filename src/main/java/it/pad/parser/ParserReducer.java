@@ -7,12 +7,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 
 import it.pad.PageRankWritable;
-import it.pad.PageRankCounters;
 import it.pad.PageRankConstants;
 
 public class ParserReducer extends Reducer<Text, Text, NullWritable, PageRankWritable>{
 
-	private static final String separator="\t";
 	private PageRankWritable output=new PageRankWritable();
 
 	@Override
@@ -30,7 +28,7 @@ public class ParserReducer extends Reducer<Text, Text, NullWritable, PageRankWri
 		for(Text destination : destinations){
 			destinationString=destination.toString();
 			if(destinationString.isEmpty()) continue;
-			builder.append(destinationString).append(separator);
+			builder.append(destinationString).append(PageRankConstants.SEPARATOR);
 		}
 		//emit a PRW for each node containing the source node, its adjacency list and the starting value of page rank
 		output.setSource(source.toString());
