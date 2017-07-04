@@ -89,24 +89,20 @@ public class PageRankWritable implements WritableComparable<PageRankWritable> {
 		return sourceNode.getLength()==0;
 	}
 	
-	public void setPageRank(double newPageRank){
-		pageRank.set(newPageRank);
-	}
-	
-	public void setAdjacencyList(String newAdjacencyList){
-		adjacencyList.set(newAdjacencyList);
-	}
-	
 	public String getSource(){
 		return sourceNode.toString();
+	}
+	
+	public void setPageRank(double newPageRank){
+		pageRank.set(newPageRank);
 	}
 	
 	public double getPageRank(){
 		return pageRank.get();
 	}
 	
-	public String getAdjacencyList(){
-		return adjacencyList.toString();
+	public void setAdjacencyList(String newAdjacencyList){
+		adjacencyList.set(newAdjacencyList);
 	}
 	
 	public void clearAdjacencyList(){
@@ -115,6 +111,10 @@ public class PageRankWritable implements WritableComparable<PageRankWritable> {
 	
 	public boolean hasEmptyAdjacencyList(){
 		return adjacencyList.getLength()==0;
+	}
+	
+	public String getAdjacencyList(){
+		return adjacencyList.toString();
 	}
 	
 	@Override

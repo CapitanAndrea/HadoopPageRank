@@ -24,7 +24,7 @@ public class SorterReducer extends Reducer<PageRankWritable, PageRankWritable, N
 	public final void reduce(PageRankWritable key, Iterable<PageRankWritable> values, Context context) throws IOException, InterruptedException{
 		long e=0;
 		for(PageRankWritable prw : values){
-			if(!e<maxElements) return;
+			if(e>=maxElements) return;
 			context.write(NullWritable.get(), prw);
 			e++;
 		}

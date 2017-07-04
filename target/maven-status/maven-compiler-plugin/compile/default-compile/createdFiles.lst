@@ -1,5 +1,6 @@
 it/pad/sorter/PageRankWritableKeyComparator.class
 it/pad/parser/EdgeListMapper.class
+it/pad/sorter/AscendingStringIdComparator.class
 it/pad/sorter/SorterReducer.class
 it/pad/PageRankDriver.class
 it/pad/sorter/SorterMapper.class
@@ -9,7 +10,6 @@ it/pad/parser/AdjacencyListMapper.class
 it/pad/sorter/DescendingRankComparator.class
 it/pad/ranker/RankerReducer.class
 it/pad/parser/ParserMapper.class
-it/pad/sorter/AscendingIdComparator.class
 it/pad/PageRankConstants.class
 it/pad/PageRankWritable.class
 it/pad/sorter/PageRankWritableGroupingComparator.class

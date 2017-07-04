@@ -2,9 +2,9 @@
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/PageRankConstants.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/ranker/RankerMapper.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/parser/ParserReducer.java
-/home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/AscendingIdComparator.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/PageRankWritableKeyComparator.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/SorterReducer.java
+/home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/AscendingStringIdComparator.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/PageRankWritableGroupingComparator.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/parser/EdgeListMapper.java
 /home/hadoop/Desktop/pad/project/code/pagerank/src/main/java/it/pad/sorter/DescendingRankComparator.java
