@@ -1,4 +1,4 @@
 # HadoopPageRank
-A first, tentative, implementation of Page Rank algorithm using Hadoop map reduce framework.
+Un'implementazione dell'algoritmo [PageRank](http://infolab.stanford.edu/pub/papers/google.pdf) per Hadoop 1.2.1
 
-A written report with details about implementation and the work done can be found here: https://www.overleaf.com/read/pfjsmrnyffbn
+Una relazione contenente tutti i dettagli, le scelte implementative (sezione 2) e il manuale d'uso (sezione 3) può essere trovata [qui](https://www.overleaf.com/read/pfjsmrnyffbn).
