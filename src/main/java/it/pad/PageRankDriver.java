@@ -42,6 +42,11 @@ public class PageRankDriver extends Configured implements Tool{
 		int numReducers=1;
 	/*	computation variables	*/
 		int iterations=0;
+		long start;
+		long preRank;
+		long postRank;
+		long end;
+		double elapsed;
 
 		/*	arguments parsing	*/
 		if(args.length%2!=0) return -1;
@@ -83,7 +88,7 @@ public class PageRankDriver extends Configured implements Tool{
 				continue;
 			}
 			//	number of top values to emit
-			
+
 			if(args[i].compareTo("-t")==0){
 				i++;
 				emit=Long.parseLong(args[i]);
@@ -102,7 +107,7 @@ public class PageRankDriver extends Configured implements Tool{
 				continue;
 			}
 		}
-		
+
 		/*check if the arguments passed are valid*/
 		if(nodes<1){
 			System.out.println("|=ERROR=| The number of nodes was not specified or less than 1");
@@ -121,11 +126,12 @@ public class PageRankDriver extends Configured implements Tool{
 		}
 		if(emit==-1) emit=nodes;
 
+		start=System.nanoTime();
 		/*	parsing job	*/
 		System.out.println("|=LOG=|\t\tSTARTING PARSING JOB.");
 		Configuration configuration=new Configuration();
 		configuration.setLong(PageRankConstants.N_KEY, nodes);
-		
+
 		Job parsingJob=new Job(configuration, "parsing_job");
 		parsingJob.setJarByClass(PageRankDriver.class);
 
@@ -144,7 +150,8 @@ public class PageRankDriver extends Configured implements Tool{
 		parsingJob.setNumReduceTasks(numReducers);
 		parsingJob.waitForCompletion(true);
 		System.out.println("|=LOG=|\t\tPARSING JOB COMPLETED.");
-		
+		preRank=System.nanoTime();
+
 
 		/*	page rank computation	*/
 		configuration=new Configuration();
@@ -176,10 +183,11 @@ public class PageRankDriver extends Configured implements Tool{
 
 			rankingJob.waitForCompletion(true);
 			System.out.println("|=LOG=|\t\tITERATION " + iterations + " COMPLETED.");
-			
+
 			//delete the files no more needed
 			fs.delete(input, true);
 		}
+		postRank=System.nanoTime();
 
 		/*	final sort	*/
 		System.out.println("|=LOG=|\t\tSTARTING SORING JOB.");
@@ -191,7 +199,7 @@ public class PageRankDriver extends Configured implements Tool{
 
 		sortingJob.setMapOutputKeyClass(PageRankWritable.class);
 		sortingJob.setMapOutputValueClass(PageRankWritable.class);
-		
+
 		sortingJob.setOutputKeyClass(NullWritable.class);
 		sortingJob.setOutputValueClass(PageRankWritable.class);
 
@@ -212,6 +220,15 @@ public class PageRankDriver extends Configured implements Tool{
 
 		fs.delete(input, true);
 		System.out.println("|=LOG=|\t\tSORTING JOB COMPLETED.");
+		end=System.nanoTime();
+		elapsed=(double) (end-start)/1e9;
+		System.out.println("|=LOG=|\t\tTOTAL ELAPSED TIME: " + elapsed + " SECONDS.");
+		elapsed=(double) (preRank-start)/1e9;
+		System.out.println("|=LOG=|\t\tPARSING TIME: " + elapsed + " SECONDS.");
+		elapsed=(double) (postRank-preRank)/1e9;
+		System.out.println("|=LOG=|\t\tRANKING TIME: " + elapsed + " SECONDS.\t\t MEAN RANKING ITERATION TIME: " + (elapsed/maxIterations) + " SECONDS.");
+		elapsed=(double) (end-postRank)/1e9;
+		System.out.println("|=LOG=|\t\tSORTING TIME: " + elapsed + " SECONDS.");
 		return 0;
 	}
 
